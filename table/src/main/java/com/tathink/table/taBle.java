@@ -7,7 +7,10 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattServer;
+import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
+import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -32,6 +35,7 @@ public class taBle {
     private boolean mScanning; // 스캐닝
     private Handler mHandler; // 핸들러
     private BluetoothAdapter mBluetoothAdapter; // 블루투스 어뎁터
+    private BluetoothManager mBluetoothManager;
 
     private Activity mActivity;
     private FragmentManager fragManager;
@@ -39,6 +43,9 @@ public class taBle {
 
     private Map<String, BluetoothDevice> scannedDeviceMap;
     private Map<String, BluetoothGatt> connectedDeviceMap;
+    private Map<String, UUID> connectUUIDMap;
+    private Map<String, BluetoothGattService> connectedGattService;
+    private Map<String, BluetoothGattCharacteristic> connectedGattCharacteristic;
 
     private static long mScanPeriod = 5000; // 탐색시간
 
@@ -59,8 +66,8 @@ public class taBle {
         }
 
         // 블루투스 어뎁터 생성
-        final BluetoothManager bluetoothManager = (BluetoothManager)activity.getSystemService(Context.BLUETOOTH_SERVICE);
-        mBluetoothAdapter = bluetoothManager.getAdapter();
+        mBluetoothManager = (BluetoothManager)activity.getSystemService(Context.BLUETOOTH_SERVICE);
+        mBluetoothAdapter = mBluetoothManager.getAdapter();
 
         if(mBluetoothAdapter == null) {
             Toast.makeText(activity, "블루투스를 지원하지 않습니다.", Toast.LENGTH_SHORT).show();
@@ -144,40 +151,109 @@ public class taBle {
         BluetoothDevice mDevice;
 
         if(address == null|| uuid == null || mBluetoothAdapter == null) {
-            Log.i("@ckw", "잘못된 연결 시도.");
+            Log.i("@ckw", "연결할 데이터가 없습니다.");
             return false;
         }
 
-        if(!scannedDeviceMap.containsKey(address) ) {
+        if( !scannedDeviceMap.containsKey(address) ) {
             Log.i("@ckw", "잘못된 연결 주소");
             return false;
         }
+
+        if( connectedDeviceMap.containsKey(address) ) {
+
+            Log.i("@ckw", "이미 연결된 주소");
+            return false;
+        }
+
         mDevice = scannedDeviceMap.get(address);
+        int connectionState = mBluetoothManager.getConnectionState(mDevice, BluetoothProfile.GATT);
+        if(connectionState == BluetoothProfile.STATE_CONNECTED) {
+            Log.i("@ckw", "이미 연결된 주소");
+            return false;
+        }
 
-        mBluetoothGatt = mDevice.connectGatt(mActivity, false, mGattCallback);
-
-        return true;
+        if(connectionState == BluetoothProfile.STATE_DISCONNECTED) {
+            mBluetoothGatt = mDevice.connectGatt(mActivity, false, mGattCallback);
+            Log.i("@ckw", "연결 시도");
+            if(!connectUUIDMap.containsKey(address)) {
+                connectUUIDMap.put(address, uuid);
+            } else {
+                connectUUIDMap.remove(address);
+            }
+            return true;
+        } else {
+            Log.i("@ckw", "잘못된 연결 시도");
+            return false;
+        }
     }
+
     private final BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
+        // 연결 상태가 변경되면 호출됨
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
             super.onConnectionStateChange(gatt, status, newState);
 
+            BluetoothDevice device = gatt.getDevice();
+            String address = device.getAddress();
 
+            if(newState == BluetoothProfile.STATE_CONNECTED) {
+                //TODO 연결됨
 
-            //if(newState ==)
+                if(connectedDeviceMap.containsKey(address)) {
+                    connectedDeviceMap.put(address, gatt);
+                }
+            } else if(newState == BluetoothProfile.STATE_DISCONNECTED) {
+                //TODO 연결 끊김
+
+                if(connectedDeviceMap.containsKey(address)) {
+                    BluetoothGatt _bluetoothGatt = connectedDeviceMap.get(address);
+                    if(_bluetoothGatt != null) {
+                        _bluetoothGatt.close();
+                        _bluetoothGatt = null;
+                    }
+                    connectedDeviceMap.remove(address);
+                }
+
+                if(connectUUIDMap.containsKey(address)) {
+                    connectUUIDMap.remove(address);
+                }
+
+                if(connectedGattCharacteristic.containsKey(address)) {
+                    connectedGattCharacteristic.remove(address);
+                }
+            }
         }
 
+        // BLE 서비스 탐색되면 호출
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             super.onServicesDiscovered(gatt, status);
+            BluetoothDevice tempDevice = gatt.getDevice();
+            if(status == BluetoothGatt.GATT_SUCCESS) {
+                if(connectUUIDMap.containsKey(tempDevice.getAddress() )) {
+                    UUID tempUUID = connectUUIDMap.get(tempDevice.getAddress());
+                    BluetoothGattService tempGattService = gatt.getService(tempUUID);
+                    if(!connectedGattCharacteristic.containsKey(tempDevice.getAddress())) {
+                        connectedGattCharacteristic.put(tempDevice.getAddress()
+                                ,tempGattService.getCharacteristic(tempUUID));
+                    }
+                }
+            } else {
+                Log.i("@ckw", "onServicesDiscovered received: "+status);
+            }
         }
 
+        // 특성읽기
         @Override
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             super.onCharacteristicRead(gatt, characteristic, status);
+            if(status == BluetoothGatt.GATT_SUCCESS) {
+
+            }
         }
 
+        // 특성 변경됨 (데이터 전송시 사용)
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
             super.onCharacteristicChanged(gatt, characteristic);
@@ -207,6 +283,14 @@ public class taBle {
 
     public interface scanCallBack {
         void onScan(final taDevice device, int rssi);
+    }
+
+    public interface readCallBack {
+        //void onData(final taDevice);
+    }
+
+    public interface disconnectCallBack {
+
     }
 
     private void locationPermission() {
