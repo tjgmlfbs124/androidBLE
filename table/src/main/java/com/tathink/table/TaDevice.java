@@ -1,9 +1,9 @@
 package com.tathink.table;
 
-public class taDevice {
+public class TaDevice {
     public String address = "";
     public String name = "";
-    public taDevice(String address, String deviceName) {
+    public TaDevice(String address, String deviceName) {
         this.address = address;
         this.name = deviceName;
     }

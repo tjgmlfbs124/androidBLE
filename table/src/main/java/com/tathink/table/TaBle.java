@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class taBle {
+public class TaBle {
 
     private boolean mScanning; // 스캐닝
     private Handler mHandler; // 핸들러
@@ -51,7 +51,7 @@ public class taBle {
 
     private static final int REQUEST_CODE_PERMISSON_LOCATION = 2001;
 
-    public taBle(Activity activity) {
+    public TaBle(Activity activity) {
         mHandler = new Handler();
         mActivity = activity;
 
@@ -87,9 +87,6 @@ public class taBle {
 
         // 위치정보 검사
         locationPermission();
-
-
-        //@TODO 바인드 서비스?
     }
 
     public boolean scan(long scanPeriod, ScanCallBack callBack) {
@@ -121,23 +118,22 @@ public class taBle {
     }
 
     private BluetoothAdapter.LeScanCallback mLeScanCallback =
-        new BluetoothAdapter.LeScanCallback() {
-        //TODO 이미 탐색된 디바이스는 리턴X
-
+            new BluetoothAdapter.LeScanCallback() {
         String address;
         String deviceName;
-            @Override
-            public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
-                address = device.getAddress();
-                deviceName = device.getName();
 
-                if(!scannedDeviceMap.containsKey(address)) {
-                    scannedDeviceMap.put(address, device);
-                    mScanCallBack.onScan(new taDevice(address, deviceName), rssi);
-                }
+        @Override
+        public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
+            address = device.getAddress();
+            deviceName = device.getName();
 
+            if(!scannedDeviceMap.containsKey(address)) {
+                scannedDeviceMap.put(address, device);
+                mScanCallBack.onScan(new TaDevice(address, deviceName), rssi);
             }
-            };
+
+        }
+    };
 
     public boolean isScanning() {
         return mScanning;
@@ -276,8 +272,8 @@ public class taBle {
                 }
             }
 
-            taDevice tempDevice =
-                    new taDevice(tempBluetoothDevice.getAddress(), tempBluetoothDevice.getName());
+            TaDevice tempDevice =
+                    new TaDevice(tempBluetoothDevice.getAddress(), tempBluetoothDevice.getName());
             mReadCallBack.onData(tempDevice, new String(data) );
         }
     };
@@ -286,7 +282,7 @@ public class taBle {
         mReadCallBack = callback;
     }
 
-    public void writeData(taDevice device, String data) {
+    public void writeData(TaDevice device, String data) {
         if(mBluetoothAdapter == null) {
             Log.i("@ckw", "블루투스 가 설정되지 않음");
             return;
@@ -313,20 +309,24 @@ public class taBle {
         }
     }
 
-    public void disConnect(DisconnectCallBack callBack) {
+    public void disConnected(DisconnectCallBack callBack) {
         // TODO 연결 끊김 구현
     }
 
+    public void disConnect(TaDevice device) {
+        // TODO 연결 끊기 구현
+    }
+
     public interface ScanCallBack {
-        void onScan(final taDevice device, int rssi);
+        void onScan(final TaDevice device, int rssi);
     }
 
     public interface ReadCallBack {
-        void onData(final taDevice device, String data);
+        void onData(final TaDevice device, String data);
     }
 
     public interface DisconnectCallBack {
-        void onDisconnect(final taDevice device);
+        void onDisconnect(final TaDevice device);
     }
 
     private void locationPermission() {
