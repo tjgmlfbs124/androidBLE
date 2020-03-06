@@ -121,23 +121,22 @@ public class taBle {
     }
 
     private BluetoothAdapter.LeScanCallback mLeScanCallback =
-            new BluetoothAdapter.LeScanCallback() {
+        new BluetoothAdapter.LeScanCallback() {
         //TODO 이미 탐색된 디바이스는 리턴X
 
         String address;
         String deviceName;
-                @Override
-                public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
-                    address = device.getAddress();
-                    deviceName = device.getName();
-                    Log.i("@ckw", "주소 저장");
-                    if(!scannedDeviceMap.containsKey(address)) {
-                        Log.i("@ckw", "주소 저장 완료");
-                        scannedDeviceMap.put(address, device);
-                        mScanCallBack.onScan(new taDevice(address, deviceName), rssi);
-                    }
+            @Override
+            public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
+                address = device.getAddress();
+                deviceName = device.getName();
 
+                if(!scannedDeviceMap.containsKey(address)) {
+                    scannedDeviceMap.put(address, device);
+                    mScanCallBack.onScan(new taDevice(address, deviceName), rssi);
                 }
+
+            }
             };
 
     public boolean isScanning() {
@@ -279,7 +278,7 @@ public class taBle {
 
             taDevice tempDevice =
                     new taDevice(tempBluetoothDevice.getAddress(), tempBluetoothDevice.getName());
-            mReadCallBack.onData(tempDevice, data.toString() );
+            mReadCallBack.onData(tempDevice, new String(data) );
         }
     };
 
@@ -304,7 +303,7 @@ public class taBle {
                     tempCharacteristic.setValue(buffer);
                     tempBluetoothGatt.writeCharacteristic(tempCharacteristic);
                 } else {
-                    Log.i("@ckw", "wirte 기능이 없음.");
+                    Log.i("@ckw", "write 기능이 없음.");
                 }
             } else {
                 Log.i("@ckw", "Gatt 특성이 없음.");

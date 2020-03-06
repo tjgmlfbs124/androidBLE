@@ -55,5 +55,11 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        myBle.readData(new taBle.ReadCallBack() {
+            @Override
+            public void onData(taDevice device, String data) {
+                Log.i("@ckw", "readData: "+data);
+            }
+        });
     }
 }
