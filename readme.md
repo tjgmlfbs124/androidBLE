@@ -30,37 +30,43 @@ dependencies {
  - 위치권한
 
 ## Usage
-``` java
-// Manifest
+
+- Manifest.xml
+``` xml
 <uses-permission android:name="android.permission.BLUETOOTH" />
 <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
 <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+```
 
-// Activity
+- Activity.java
+``` java
+import com.tathink.AndroidBle.AndroidBle;
+import com.tathink.AndroidBle.BleDevice;
+
 AndroidBle myBle = new AndroidBle(activity);
 
 // scanPeriod: 스캔할 시간
 // ScanCallBack(): 장치가 스캔 될 때 콜백됨.
 myBle.scan(scanPeriod, AndroidBle.ScanCallBack() {
     @Override
-    public void onScan(TaDevice device, int rssi) {
+    public void onScan(BleDevice device, int rssi) {
         ...
     }
 })
 
 // 디바이스와 UUID로 서비스, 특성 연결
-myBle.connect(TaDevice, UUID); 
+myBle.connect(BleDevice, UUID); 
 
 // 디바이스에 String 타입 데이터 전송 (최대 20Byte)
-myBle.writeData(TaDevice, String); 
+myBle.writeData(BleDevice, String); 
 
 // 디바이스연결 해제
-myBle.disConnect(TaDevice);
+myBle.disConnect(BleDevice);
 
 // 디바이스로 부터 온 데이터를 읽음
 myBle.readData(new AndroidBle.ReadCallBack() {
     @Override
-    public void onData(TaDevice, String) {
+    public void onData(BleDevice, String) {
         ...
     }
 });
@@ -68,7 +74,7 @@ myBle.readData(new AndroidBle.ReadCallBack() {
 // 디바이스와 연결이 끊겼을 때 호출됨
 myBle.disConnected(new AndroidBle.DisconnectedCallBack() {
     @Override
-    public void onDisconnected(TaDevice device) {
+    public void onDisconnected(BleDevice device) {
         ...
     }
 });
