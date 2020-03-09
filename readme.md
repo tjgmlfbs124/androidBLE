@@ -6,17 +6,24 @@
 ## 라이브러리를 종속성으로 추가
 1. 다음 두 가지 방법 중 하나로 라이브러리를 프로젝트에 추가합니다. 
     - AndroidBle.aar 파일을 추가합니다.  
-        a. FIle > New > New Module 을 선택합니다.  
-        b. Import .JAR/.AAR Package를 클릭한 후 Next를 클릭합니다.  
-        c. AAR파일의 위치를 입력한 후 Finish를 클릭합니다.
+        1. FIle > New > New Module 을 선택합니다.  
+        2. Import .JAR/.AAR Package를 클릭한 후 Next를 클릭합니다.  
+        3. 'AndroidBle-debug.aar' 파일의 위치를 입력한 후 Finish를 클릭합니다.
     - 라이브러리 모듈을 프로젝트로 가져옵니다  
-        a. File > New > Import Module을 클릭합니다.
-        b. 라이브러리 모듈 디렉토리의 위치를 입력한 후 Finish를 클릭
+        1. File > New > Import Module을 클릭합니다.  
+        2. 라이브러리 모듈 디렉토리의 위치를 입력한 후 Finish를 클릭
 
 2. settings.gradle 파일의 상단에 라이브러리가 표시되는지 확인합니다.
 ```
 include ':app', ':AndroidBle'
 ```
+3. 앱 모듈의 build.gradle 파일을 열고 dependencies 블록에 새 줄을 추가합니다.
+```
+dependencies {
+    implementation project(":AndroidBle")
+}
+```
+4. 'File > Sync Project with Gradle Files' 을 클릭합니다.
 
 ## 장치 사용 권한
  - 블루투스
