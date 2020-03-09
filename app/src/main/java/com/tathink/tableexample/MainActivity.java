@@ -14,7 +14,7 @@ import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
     TaDevice toConnnectDevice;
-    String uuidStr = "0000FFE1-0000-1000-8000-00805F9B34FB";
+    final static String uuidStr = "0000FFE1-0000-1000-8000-00805F9B34FB";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,11 +23,12 @@ public class MainActivity extends AppCompatActivity {
 
         Button connectBtn = (Button)this.findViewById(R.id.connectBtn);
         Button writeBtn = (Button)this.findViewById(R.id.writeBtn);
+        Button disconnectBtn = (Button)this.findViewById(R.id.disconnectBtn);
 
 
         final TaBle myBle = new TaBle(this);
 
-        myBle.scan(2000, new TaBle.ScanCallBack() {
+        myBle.scan(20000, new TaBle.ScanCallBack() {
             // 디바이스가 스캔 될 때 마다 호출됨.
             @Override
             public void onScan(TaDevice device, int rssi) {
@@ -45,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
         connectBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                myBle.connect(toConnnectDevice.address, UUID.fromString(uuidStr));
+                myBle.connect(toConnnectDevice, UUID.fromString(uuidStr));
             }
         });
 
@@ -56,11 +57,25 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        disconnectBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                myBle.disConnect(toConnnectDevice);
+            }
+        });
+
         // 데이터를 받을 때 마다 리턴됨
         myBle.readData(new TaBle.ReadCallBack() {
             @Override
             public void onData(TaDevice device, String data) {
                 Log.i("@ckw", "readData: "+data);
+            }
+        });
+
+        myBle.disConnected(new TaBle.DisconnectedCallBack() {
+            @Override
+            public void onDisconnected(TaDevice device) {
+                Log.i("@ckw", "disconnected:"+device.name);
             }
         });
     }

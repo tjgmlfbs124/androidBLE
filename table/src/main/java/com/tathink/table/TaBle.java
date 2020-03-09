@@ -35,20 +35,23 @@ public class TaBle {
     private FragmentManager fragManager;
     private BluetoothGatt mBluetoothGatt;
 
-    private Map<String, BluetoothDevice> scannedDeviceMap;
+    private Map<String, BluetoothDevice> scannedDeviceMap; // 주소 디바이스
     private Map<String, BluetoothGatt> connectedDeviceMap;
     private Map<String, UUID> connectUUIDMap;
     private Map<String, BluetoothGattService> connectedGattService;
     private Map<String, BluetoothGattCharacteristic> connectedGattCharacteristic;
 
-    private static long mScanPeriod = 5000; // 탐색시간
+    private long mScanPeriod = 5000; // 탐색시간
 
     private ScanCallBack mScanCallBack = null;
     private ReadCallBack mReadCallBack = null;
-    private DisconnectCallBack mDisconnectCallBack = null;
+    private DisconnectedCallBack mDisconnectedCallBack = null;
+    // TODO 디바이스별 다른 콜백??
 
+    // 블루투스 연결 요청코드
     private static final int REQUEST_ENABLE_BT = 1001;
 
+    // 위치권한 요청코드
     private static final int REQUEST_CODE_PERMISSON_LOCATION = 2001;
 
     public TaBle(Activity activity) {
@@ -110,6 +113,7 @@ public class TaBle {
             public void run() {
                 mScanning = false;
                 mBluetoothAdapter.stopLeScan(mLeScanCallback);
+                Log.i("@ckw", "탐색 완료");
             }
         }, mScanPeriod);
 
@@ -122,7 +126,7 @@ public class TaBle {
         String address;
         String deviceName;
 
-        @Override
+        @Override // 디바이스가 스캔 됐을 때
         public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
             address = device.getAddress();
             deviceName = device.getName();
@@ -146,27 +150,27 @@ public class TaBle {
         mScanning = false;
     }
 
-    public boolean connect(String address, UUID uuid) {
-        //TODO 연결 시 스켄 정지 해야하는가?
+    public boolean connect(TaDevice taDevice, UUID uuid) {
+        // @ckw 스켄중 연결 가능
         BluetoothDevice mDevice;
 
-        if(address == null|| uuid == null || mBluetoothAdapter == null) {
+        if(taDevice.address == null|| uuid == null || mBluetoothAdapter == null) {
             Log.i("@ckw", "연결할 데이터가 없습니다.");
             return false;
         }
-
-        if( !scannedDeviceMap.containsKey(address) ) {
-            Log.i("@ckw", "잘못된 연결 주소"+address);
+        // 연결 하려는 디바이스가 스켄되지 않았음
+        if( !scannedDeviceMap.containsKey(taDevice.address) ) {
+            Log.i("@ckw", "잘못된 연결 주소"+taDevice.address);
             return false;
         }
 
-        if( connectedDeviceMap.containsKey(address) ) {
+        if( connectedDeviceMap.containsKey(taDevice.address) ) {
 
             Log.i("@ckw", "이미 연결된 주소");
             return false;
         }
 
-        mDevice = scannedDeviceMap.get(address);
+        mDevice = scannedDeviceMap.get(taDevice.address);
         int connectionState = mBluetoothManager.getConnectionState(mDevice, BluetoothProfile.GATT);
         if(connectionState == BluetoothProfile.STATE_CONNECTED) {
             Log.i("@ckw", "이미 연결된 주소");
@@ -176,13 +180,11 @@ public class TaBle {
         if(connectionState == BluetoothProfile.STATE_DISCONNECTED) {
             mBluetoothGatt = mDevice.connectGatt(mActivity, false, mGattCallback);
             Log.i("@ckw", "연결 시도");
-            if(!connectUUIDMap.containsKey(address)) {
-                connectUUIDMap.put(address, uuid);
+            if(!connectUUIDMap.containsKey(taDevice)) {
+                connectUUIDMap.put(taDevice.address, uuid);
             } else {
-                connectUUIDMap.remove(address);
+                connectUUIDMap.remove(taDevice);
             }
-
-
             return true;
         } else {
             Log.i("@ckw", "잘못된 연결 시도");
@@ -201,13 +203,16 @@ public class TaBle {
             gatt.discoverServices();
 
             if(newState == BluetoothProfile.STATE_CONNECTED) {
-                //TODO 연결됨
+                // 연결 연결됨
                 Log.i("@ckw", "연결 완료.");
                 if(!connectedDeviceMap.containsKey(address)) {
                     connectedDeviceMap.put(address, gatt);
                 }
             } else if(newState == BluetoothProfile.STATE_DISCONNECTED) {
-                //TODO 연결 끊김
+                // TODO 연결 끊김
+                Log.i("@ckw", "연결 끊김");
+
+                mDisconnectedCallBack.onDisconnected(new TaDevice(address, gatt.getDevice().getName() ));
 
                 if(connectedDeviceMap.containsKey(address)) {
                     BluetoothGatt _bluetoothGatt = connectedDeviceMap.get(address);
@@ -280,6 +285,7 @@ public class TaBle {
 
     public void readData(ReadCallBack callback) {
         mReadCallBack = callback;
+        // 디바이스마다 개별 콜백?
     }
 
     public void writeData(TaDevice device, String data) {
@@ -290,6 +296,11 @@ public class TaBle {
 
         String address = device.address;
         BluetoothGatt tempBluetoothGatt = connectedDeviceMap.get(address);
+
+        if(!connectedDeviceMap.containsKey(address)){
+            Log.i("@ckw", "연결되지 않은 장비에 송신 시도");
+            return;
+        }
 
         if(tempBluetoothGatt != null) {
             BluetoothGattCharacteristic tempCharacteristic = connectedGattCharacteristic.get(address);
@@ -309,12 +320,32 @@ public class TaBle {
         }
     }
 
-    public void disConnected(DisconnectCallBack callBack) {
+    public void disConnected(DisconnectedCallBack callBack) {
         // TODO 연결 끊김 구현
+        mDisconnectedCallBack = callBack;
     }
 
     public void disConnect(TaDevice device) {
         // TODO 연결 끊기 구현
+        if(connectedDeviceMap.containsKey(device.address)) {
+            BluetoothGatt tempGatt = connectedDeviceMap.get(device.address);
+            if(tempGatt != null) {
+                tempGatt.disconnect();
+                tempGatt = null;
+            }
+            connectedDeviceMap.remove(device.address);
+        } else {
+            Log.i("@ckw", "연결되지 않은 장비 시도");
+        }
+
+        if (connectUUIDMap.containsKey(device.address)) {
+            connectUUIDMap.remove(device.address);
+        }
+        if(connectedGattCharacteristic.containsKey(device.address)){
+            connectedGattCharacteristic.remove(device.address);
+        }
+        Log.i("@ckw", "연결 끊기");
+
     }
 
     public interface ScanCallBack {
@@ -325,8 +356,8 @@ public class TaBle {
         void onData(final TaDevice device, String data);
     }
 
-    public interface DisconnectCallBack {
-        void onDisconnect(final TaDevice device);
+    public interface DisconnectedCallBack {
+        void onDisconnected(final TaDevice device);
     }
 
     private void locationPermission() {
