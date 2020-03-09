@@ -1,2 +1,2 @@
-include ':app', ':table'
+include ':app', ':AndroidBle'
 rootProject.name='taBleExample'

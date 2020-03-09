@@ -1,4 +1,4 @@
-package com.tathink.table;
+package com.tathink.AndroidBle;
 
 import org.junit.Test;
 

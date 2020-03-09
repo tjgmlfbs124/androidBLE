@@ -1,9 +1,9 @@
-package com.tathink.table;
+package com.tathink.AndroidBle;
 
-public class TaDevice {
+public class BleDevice {
     public String address = "";
     public String name = "";
-    public TaDevice(String address, String deviceName) {
+    public BleDevice(String address, String deviceName) {
         this.address = address;
         this.name = deviceName;
     }
