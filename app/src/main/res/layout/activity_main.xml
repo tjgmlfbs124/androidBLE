@@ -9,32 +9,63 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="DISCON"
+        android:text="DISCON A"
         app:layout_constraintBottom_toTopOf="@id/connectBtn"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintRight_toLeftOf="@id/disconnectBtn2"
         app:layout_constraintTop_toTopOf="parent"
         android:id="@+id/disconnectBtn"
-        />
+    />
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="CONNECT"
+        android:text="CONNECT A"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintRight_toLeftOf="@id/connectBtn2"
         app:layout_constraintTop_toTopOf="parent"
         android:id="@+id/connectBtn"
         />
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="WRITE"
+        android:text="WRITE A"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="@id/connectBtn"
+        app:layout_constraintRight_toLeftOf="@id/writeBtn2"
+        app:layout_constraintTop_toBottomOf="@id/connectBtn"
         android:id="@+id/writeBtn"
+        />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="DISCON B"
+        app:layout_constraintBottom_toTopOf="@id/connectBtn2"
+        app:layout_constraintLeft_toRightOf="@id/disconnectBtn"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:id="@+id/disconnectBtn2"
+        />
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="CONNECT B"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toRightOf="@id/connectBtn"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:id="@+id/connectBtn2"
+        />
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="WRITE B"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toRightOf="@id/writeBtn"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/connectBtn2"
+        android:id="@+id/writeBtn2"
         />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

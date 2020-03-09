@@ -13,7 +13,8 @@ import com.tathink.table.TaDevice;
 import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
-    TaDevice toConnnectDevice;
+    TaDevice toConnectDevice;
+    TaDevice toConnectDevice2;
     final static String uuidStr = "0000FFE1-0000-1000-8000-00805F9B34FB";
 
     @Override
@@ -25,10 +26,14 @@ public class MainActivity extends AppCompatActivity {
         Button writeBtn = (Button)this.findViewById(R.id.writeBtn);
         Button disconnectBtn = (Button)this.findViewById(R.id.disconnectBtn);
 
+        Button connectBtn2 = (Button)this.findViewById(R.id.connectBtn2);
+        Button writeBtn2 = (Button)this.findViewById(R.id.writeBtn2);
+        Button disconnectBtn2 = (Button)this.findViewById(R.id.disconnectBtn2);
+
 
         final TaBle myBle = new TaBle(this);
 
-        myBle.scan(20000, new TaBle.ScanCallBack() {
+        myBle.scan(3000, new TaBle.ScanCallBack() {
             // 디바이스가 스캔 될 때 마다 호출됨.
             @Override
             public void onScan(TaDevice device, int rssi) {
@@ -37,8 +42,12 @@ public class MainActivity extends AppCompatActivity {
                 String mAddress = device.address;
                 Log.i("@ckw", "scanned device: "+mName+"//addr: "+mAddress);
                 if(mAddress.equals("50:8C:B1:66:0C:B3") ) {
-                    Log.i("@ckw", "나의주소 저장");
-                    toConnnectDevice = new TaDevice(mAddress, mName);
+                    Log.i("@ckw", "keep1 :"+mName);
+                    toConnectDevice = new TaDevice(mAddress, mName);
+                }
+                if(mAddress.equals("50:8C:B1:6A:7F:D7")) {
+                    Log.i("@ckw", "keep2 :"+mName);
+                    toConnectDevice2 = new TaDevice(mAddress, mName);
                 }
             }
         });
@@ -46,21 +55,38 @@ public class MainActivity extends AppCompatActivity {
         connectBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                myBle.connect(toConnnectDevice, UUID.fromString(uuidStr));
+                myBle.connect(toConnectDevice, UUID.fromString(uuidStr));
             }
         });
-
         writeBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                myBle.writeData(toConnnectDevice, "hello robot!");
+                myBle.writeData(toConnectDevice, "hello robot1");
             }
         });
-
         disconnectBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                myBle.disConnect(toConnnectDevice);
+                myBle.disConnect(toConnectDevice);
+            }
+        });
+
+        connectBtn2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                myBle.connect(toConnectDevice2, UUID.fromString(uuidStr));
+            }
+        });
+        writeBtn2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                myBle.writeData(toConnectDevice2, "hello robot2");
+            }
+        });
+        disconnectBtn2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                myBle.disConnect(toConnectDevice2);
             }
         });
 
