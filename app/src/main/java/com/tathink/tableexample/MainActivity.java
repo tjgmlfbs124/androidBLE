@@ -2,10 +2,12 @@ package com.tathink.tableexample;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.tathink.AndroidBle.AndroidBle;
 import com.tathink.AndroidBle.BleDevice;
@@ -17,10 +19,13 @@ public class MainActivity extends AppCompatActivity {
     BleDevice toConnectDevice2;
     final static String uuidStr = "0000FFE1-0000-1000-8000-00805F9B34FB";
 
+    static Context mContext;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mContext = this.getApplicationContext();
 
         Button connectBtn = (Button)this.findViewById(R.id.connectBtn);
         Button writeBtn = (Button)this.findViewById(R.id.writeBtn);
@@ -94,7 +99,9 @@ public class MainActivity extends AppCompatActivity {
         myBle.readData(new AndroidBle.ReadCallBack() {
             @Override
             public void onData(BleDevice device, String data) {
-                Log.i("@ckw", "readData: "+data);
+                Log.i("@ckw", "readData: "+device.name+"//"+data);
+                myToast(device.name+"//"+data);
+                Log.i("@ckw", "toast?");
             }
         });
 
@@ -104,5 +111,13 @@ public class MainActivity extends AppCompatActivity {
                 Log.i("@ckw", "disconnected:"+device.name);
             }
         });
+
+
+    }
+
+    public void myToast(String myStr) {
+        Log.i("@ckw", "toast!");
+        Toast myToast = Toast.makeText(mContext, myStr, Toast.LENGTH_SHORT);
+        myToast.show();
     }
 }
