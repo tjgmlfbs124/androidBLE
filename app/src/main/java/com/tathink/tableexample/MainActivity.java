@@ -2,6 +2,7 @@ package com.tathink.tableexample;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
@@ -35,8 +36,8 @@ public class MainActivity extends AppCompatActivity {
         Button writeBtn2 = (Button)this.findViewById(R.id.writeBtn2);
         Button disconnectBtn2 = (Button)this.findViewById(R.id.disconnectBtn2);
 
-
-        final AndroidBle myBle = new AndroidBle(this);
+        BluetoothManager myBluetoothManager = (BluetoothManager)this.getSystemService(Context.BLUETOOTH_SERVICE);
+        final AndroidBle myBle = new AndroidBle(this.getApplicationContext(), myBluetoothManager);
 
         myBle.scan(3000, new AndroidBle.ScanCallBack() {
             // 디바이스가 스캔 될 때 마다 호출됨.

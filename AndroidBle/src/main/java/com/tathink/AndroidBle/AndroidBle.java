@@ -37,7 +37,8 @@ public class AndroidBle {
     private BluetoothAdapter mBluetoothAdapter; // 블루투스 어뎁터
     private BluetoothManager mBluetoothManager;
 
-    private Activity mActivity;
+    //private Activity mActivity;
+    private Context mContext;
     private FragmentManager fragManager;
     private BluetoothGatt mBluetoothGatt;
 
@@ -60,23 +61,27 @@ public class AndroidBle {
     // 위치권한 요청코드
     private static final int REQUEST_CODE_PERMISSON_LOCATION = 2001;
 
-    public AndroidBle(Activity activity) {
+    public AndroidBle(Context context, BluetoothManager bleManager) {
         mHandler = new Handler();
-        mActivity = activity;
+        //mActivity = activity;
+        mContext = context;
+
 
         // 디바이스 BLE지원 검사
-        if (!activity.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+        /*if (!activity.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
             Toast.makeText(activity, "BLE를 지원하지 않습니다.", Toast.LENGTH_SHORT).show();
             activity.finish();
-        }
+        }*/
 
         // 블루투스 어뎁터 생성
-        mBluetoothManager = (BluetoothManager)activity.getSystemService(Context.BLUETOOTH_SERVICE);
+        //mBluetoothManager = (BluetoothManager)activity.getSystemService(Context.BLUETOOTH_SERVICE);
+        mBluetoothManager = bleManager;
         mBluetoothAdapter = mBluetoothManager.getAdapter();
 
         if(mBluetoothAdapter == null) {
-            Toast.makeText(activity, "블루투스를 지원하지 않습니다.", Toast.LENGTH_SHORT).show();
-            activity.finish();
+            //Toast.makeText(activity, "블루투스를 지원하지 않습니다.", Toast.LENGTH_SHORT).show();
+            //activity.finish();
+            Log.i("@ckw", "블루투스를 지원하지 않는 기기");
         }
 
         // 블루투스 켜져있는지 확인
@@ -85,7 +90,8 @@ public class AndroidBle {
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             mActivity.startActivity(enableBtIntent);
              */
-            Toast.makeText(activity, "블루투스가 꺼져있습니다.", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(activity, "블루투스가 꺼져있습니다.", Toast.LENGTH_SHORT).show();
+            Log.i("@ckw", "블루투스가 꺼져있습니다");
         }
 
         // HashMap 초기화
@@ -110,7 +116,8 @@ public class AndroidBle {
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             mActivity.startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
              */
-            Toast.makeText(mActivity, "블루투스가 꺼져있습니다.", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(mActivity, "블루투스가 꺼져있습니다.", Toast.LENGTH_SHORT).show();
+            Log.i("@ckw", "블루투스가 꺼져있습니다.");
             mScanning = false;
             return false;
         }
@@ -194,7 +201,7 @@ public class AndroidBle {
         }
 
         if(connectionState == BluetoothProfile.STATE_DISCONNECTED) {
-            mBluetoothGatt = mDevice.connectGatt(mActivity, false, mGattCallback);
+            mBluetoothGatt = mDevice.connectGatt(mContext, false, mGattCallback);
             Log.i("@ckw", "연결 시도");
             connectingDeviceList.add(new BleDevice(bleDevice.address, bleDevice.name));
 
@@ -394,25 +401,27 @@ public class AndroidBle {
 
     private void locationPermission() {
         // 위치 권한 검사
-        final int permissionCheck = ContextCompat.checkSelfPermission(mActivity, Manifest.permission.ACCESS_FINE_LOCATION);
+        final int permissionCheck = ContextCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION);
         if(permissionCheck == PackageManager.PERMISSION_DENIED) {
             /* // 위치 권한 요청
             ActivityCompat.requestPermissions(mActivity,
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                     REQUEST_CODE_PERMISSON_LOCATION);
              */
-            Toast.makeText(mActivity, "위치 권한이 없습니다.",Toast.LENGTH_SHORT).show();
+            //Toast.makeText(mActivity, "위치 권한이 없습니다.",Toast.LENGTH_SHORT).show();
+            Log.i("@ckw", "위치 권한이 없습니다.");
         }
 
         // 위치 켜져있는지 검사
+        /* 액티비티 미사용으로 검사 불가능
         LocationManager locationManager = (LocationManager)mActivity.getSystemService(Context.LOCATION_SERVICE);
         if(!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-            /* //위치 켜기 요청
-            Intent locationOption = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-            mActivity.startActivity(locationOption);
-             */
-            Toast.makeText(mActivity, "위치 정보가 꺼져있습니다.", Toast.LENGTH_SHORT);
-        }
+            //위치 켜기 요청
+            //Intent locationOption = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+            //mActivity.startActivity(locationOption);
+
+            //Toast.makeText(mActivity, "위치 정보가 꺼져있습니다.", Toast.LENGTH_SHORT);
+        }*/
     }
 
 }

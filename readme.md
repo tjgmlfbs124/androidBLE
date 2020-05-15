@@ -26,6 +26,7 @@ dependencies {
 4. 'File > Sync Project with Gradle Files' 을 클릭합니다.
 
 ## 장치 사용 권한
+: 위치와 블루투스가 켜져있어야 합니다.
  - 블루투스
  - 위치권한
 
@@ -43,11 +44,12 @@ dependencies {
 import com.tathink.AndroidBle.AndroidBle;
 import com.tathink.AndroidBle.BleDevice;
 
-AndroidBle myBle = new AndroidBle(activity);
+BluetoothManager myBluetoothManager = (BluetoothManager)activity.getSystemservice(Context.BLUETOOTH_SERVICE); // 블루투스매니저
+AndroidBle myBle = new AndroidBle(Context, myBluetoothManager);
 
 // scanPeriod: 스캔할 시간
 // ScanCallBack(): 장치가 스캔 될 때 콜백됨.
-myBle.scan(scanPeriod, AndroidBle.ScanCallBack() {
+myBle.scan(scanPeriod, new AndroidBle.ScanCallBack() {
     @Override
     public void onScan(BleDevice device, int rssi) {
         ...
